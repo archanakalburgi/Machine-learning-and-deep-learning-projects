@@ -1,0 +1,101 @@
+ID,Age,Exposure,MaritalStatus,Cases,MonthAtHospital,Infected
+1001,36,3,Married,17906,7,No
+1002,34,3,Divorced,22649,2,Yes
+1003,30,3,Married,19706,7,No
+1004,41,1,Married,8405,18,No
+1005,57,4,Divorced,10882,1,No
+1006,31,3,Divorced,21022,2,No
+1007,41,2,Married,18570,3,No
+1008,40,1,Married,16604,7,No
+1009,34,4,Single,25000,6,No
+1010,31,4,Single,18418,6,No
+1011,36,4,Single,18347,1,No
+1012,32,2,Married,19122,7,No
+1013,29,1,Divorced,22665,2,Yes
+1014,30,3,Divorced,22387,10,No
+1015,36,1,Married,16679,12,No
+1016,60,1,Married,5434, ,No
+1017,48,4,Divorced,7826,22,No
+1018,28,2,Married,25000,1,No
+1019,38,3,Married,22316,2,No
+1020,30,3,Single,16526,11,No
+1021,21,2,Single,22826,3,Yes
+1022,36,3,Married,21612,1,Yes
+1023,30,3,Divorced,22307,1,No
+1024,41,4,Married,22218,5,No
+1025,29,1,Single,25000,9,Yes
+1026,38,3,Divorced,16260,8,No
+1027,30,3,Divorced,22936,5,No
+1028,29,3,Single,22358,1,No
+1029,36,2,Married,22190,5,No
+1030,36,4,Married,18799,18,No
+1031,25,4,Married,21771,3,No
+1032,46,3,Divorced,20190,10,No
+1033,29,1,Divorced,15020,10,No
+1034,26,4,Married,19528,8,No
+1035,40,2,Divorced,18148,5,No
+1036,42,1,Single,18455,3,No
+1037,46,3,Married,14473,2,No
+1038,59,4,Single,11274,5,No
+1039,52,1,Married,25000, ,No
+1040,59,3,Married,22733,2,No
+1041,25,4,Married,21331,3,No
+1042,42,4,Single,9008,1,No
+1043,54,1,Married,19060,6,No
+1044,38,4,Single,22712,2,No
+1045, ,3,Married,16177,19,No
+1046,21,4,Single,21883,2,No
+1047,55,1,Single,8244,9,No
+1048,35,2,Single,20575,6,No
+1049,31,3,Married,25000,11,No
+1050,56,4,Single,17740,6,No
+1051,33,3,Single,7556,10,No
+1052,46,1,Single,25000, ,No
+1053,28,4,Married,22287,5,No
+1054,45,4,Single,21548,6,No
+1055, ,4,Divorced,19837,1,No
+1056,41,1,Single,20279,18,No
+1057,50,3,Single,20272,0,Yes
+1058,43,1,Married,15015,1,No
+1059,49,3,Single,9621,8,No
+1060,35,1,Single,15418,8,Yes
+1061,40,2,Married,22613,4,No
+1062,37,1,Married,21436,8,No
+1063,29,1,Married,22881,7,Yes
+1064,32,4,Single,22205,1,Yes
+1065,46,4,Divorced,16422,9,No
+1066,38,1,Divorced,18712,4,No
+1067,45,4,Married,21303,10,No
+1068,56,4,Single,22413,4,Yes
+1069,47,4,Single,21706,3,No
+1070,24,3,Married,22114,6,Yes
+1071,58,2,Married,21654,1,No
+1072,33,2,Married,22378,3,No
+1073,45,1,Single,25000,10,No
+1074,27,3,Single,22682,1,No
+1075,39,1,Married,7932, ,No
+1076,26,4,Married,22341,3,No
+1077,30,1,Divorced,20221,3,No
+1078,34,3,Divorced,22971,5,No
+1079,37,1,Divorced,22927,3,Yes
+1080,36,3,Married,19653,3,No
+1081,52,4,Divorced,21518,9,No
+1082,29,2,Divorced,20813,10,No
+1083,43,3,Divorced,19743,9,No
+1084,33,4,Single,22504,1,No
+1085,51,3,Single,5463,20,No
+1086,40,3,Married,22999,5,No
+1087,38,4,Married,18739,7,No
+1088,34,3,Single,18858,5,No
+1089,33,1,Single,19676,3,Yes
+1090,54,2,Married,14275,9,No
+1091,51,2,Divorced,19518,4,No
+1092,31,3,Single,23641,1,Yes
+1093,43,4,Married,8041, ,No
+1094,34,1,Married,19654,7,Yes
+1095,39,3,Married,21245,8,No
+1096,32,4,Married,14578,14,No
+1097,30,1,Married, ,8,No
+1098,34,4,Divorced, ,9,No
+1099,39,1,Married,19849,10,No
+1100,37,4,Single,20320,1,No

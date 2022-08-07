@@ -1,0 +1,9 @@
+language: python
+
+python:
+
+
+script: 
+          - pip install -U pip
+          - python setup.py install
+          - pytest

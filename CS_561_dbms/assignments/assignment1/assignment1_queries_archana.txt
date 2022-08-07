@@ -1,0 +1,529 @@
+﻿CS 561-B : Assignment 1
+
+Name : Archana Kalburgi
+CWID : 10469491
+________________
+Query 1
+
+
+WITH minimum_quantity AS (
+        SELECT
+                cust AS customer,
+                min(quant) AS min_q
+        FROM
+                sales
+        GROUP BY
+                cust
+),
+maximum_quantity AS (
+        SELECT
+                cust AS customer,
+                max(quant) AS max_q
+        FROM
+                sales
+        GROUP BY
+                cust
+),
+average_quantity AS (
+        SELECT
+                cust AS customer,
+                round(avg(quant)) AS avg_q
+        FROM
+                sales
+        GROUP BY
+                cust
+),
+minimum_purchase_table AS (
+        SELECT
+                sales.cust,
+                sales.quant,
+                sales.prod,
+                sales.date,
+                sales.state
+        FROM
+                sales
+                INNER JOIN minimum_quantity ON sales.cust = minimum_quantity.customer
+                        AND sales.quant = minimum_quantity.min_q
+),
+maximum_purchase_table AS (
+        SELECT
+                sales.cust,
+                sales.quant,
+                sales.prod,
+                sales.date,
+                sales.state
+        FROM
+                sales
+        INNER JOIN maximum_quantity ON sales.cust = maximum_quantity.customer
+                AND sales.quant = maximum_quantity.max_q
+),
+purchase_table AS (
+        SELECT
+                minimum_purchase_table.cust AS customer,
+                minimum_purchase_table.quant AS min_q,
+                minimum_purchase_table.prod AS min_prod,
+                minimum_purchase_table.date AS min_date,
+                minimum_purchase_table.state AS min_st,
+                maximum_purchase_table.quant AS max_q,
+                maximum_purchase_table.prod AS max_prod,
+                maximum_purchase_table.date AS max_date,
+                maximum_purchase_table.state AS max_st
+        FROM
+                minimum_purchase_table
+        INNER JOIN maximum_purchase_table ON maximum_purchase_table.cust = minimum_purchase_table.cust
+)
+SELECT
+        purchase_table.customer,
+        purchase_table.min_q,
+        purchase_table.min_prod,
+        purchase_table.min_date,
+        purchase_table.min_st,
+        purchase_table.max_q,
+        purchase_table.max_prod,
+        purchase_table.max_date,
+        purchase_table.max_st,
+        average_quantity.avg_q
+FROM
+        purchase_table
+        JOIN average_quantity ON average_quantity.customer = purchase_table.customer
+ORDER BY
+        purchase_table.customer;
+________________
+
+
+Query 2
+
+
+WITH day_aggregate AS (
+        SELECT
+                year,
+                month,
+                day,
+                sum(quant) AS sum_sale
+        FROM
+                sales
+        GROUP BY
+                year,
+                month,
+                day
+),
+minimum_sales AS (
+        SELECT
+                day_aggregate.year,
+                day_aggregate.month,
+                min(day_aggregate.sum_sale) AS min_sale
+        FROM
+                day_aggregate
+        GROUP BY
+                day_aggregate.year,
+                day_aggregate.month
+),
+maximum_sales AS (
+        SELECT
+                day_aggregate.year,
+                day_aggregate.month,
+                max(day_aggregate.sum_sale) AS max_sale
+        FROM
+                day_aggregate
+        GROUP BY
+                day_aggregate.year,
+                day_aggregate.month
+),
+slowest_day_sale AS (
+        SELECT
+                minimum_sales.year,
+                minimum_sales.month,
+                day_aggregate.day AS slowest_day,
+                minimum_sales.min_sale AS slowest_total_q
+        FROM
+                minimum_sales
+                JOIN day_aggregate ON day_aggregate.year = minimum_sales.year
+                        AND day_aggregate.month = minimum_sales.month
+                        AND day_aggregate.sum_sale = minimum_sales.min_sale
+),
+busiest_day_sale AS (
+        SELECT
+                maximum_sales.year,
+                maximum_sales.month,
+                day_aggregate.day AS busiest_day,
+                maximum_sales.max_sale AS busiest_total_q
+        FROM
+                maximum_sales
+        JOIN day_aggregate ON day_aggregate.year = maximum_sales.year
+                AND day_aggregate.month = maximum_sales.month
+                AND day_aggregate.sum_sale = maximum_sales.max_sale
+)
+SELECT
+        slowest_day_sale.year,
+        slowest_day_sale.month,
+        slowest_day_sale.slowest_day,
+        slowest_day_sale.slowest_total_q,
+        busiest_day_sale.busiest_day,
+        busiest_day_sale.busiest_total_q
+FROM
+        slowest_day_sale
+JOIN busiest_day_sale ON slowest_day_sale.year = busiest_day_sale.year
+        AND slowest_day_sale.month = busiest_day_sale.month
+ORDER BY
+        year,
+        month;
+
+
+________________
+
+
+Query 3
+
+
+WITH total_products AS (
+        SELECT
+                cust,
+                month,
+                prod,
+                sum(quant) AS sum_prod
+        FROM
+                sales
+        GROUP BY
+                cust,
+                month,
+                prod
+),
+maximum_product AS (
+        SELECT
+                total_products.cust,
+                total_products.month,
+                max(total_products.sum_prod) AS most_fav_prod
+        FROM
+                total_products
+        GROUP BY
+                total_products.cust,
+                total_products.month
+),
+minimum_product AS (
+        SELECT
+                total_products.cust,
+                total_products.month,
+                min(total_products.sum_prod) AS least_fav_prod
+        FROM
+                total_products
+        GROUP BY
+                total_products.cust,
+                total_products.month
+),
+most_favourite_product AS (
+        SELECT
+                maximum_product.cust,
+                maximum_product.month,
+                total_products.prod
+        FROM
+                maximum_product
+                JOIN total_products ON total_products.cust = maximum_product.cust
+                        AND total_products.month = maximum_product.month
+                        AND total_products.sum_prod = maximum_product.most_fav_prod
+),
+least_favourite_product AS (
+        SELECT
+                minimum_product.cust,
+                minimum_product.month,
+                total_products.prod,
+                minimum_product.least_fav_prod
+        FROM
+                minimum_product
+        JOIN total_products ON total_products.cust = minimum_product.cust
+                AND total_products.month = minimum_product.month
+                AND total_products.sum_prod = minimum_product.least_fav_prod
+)
+SELECT
+        least_favourite_product.cust AS customer,
+        least_favourite_product.month,
+        most_favourite_product.prod AS most_fav_prod,
+        least_favourite_product.prod AS least_fav_prod
+FROM
+        least_favourite_product
+JOIN most_favourite_product ON least_favourite_product.cust = most_favourite_product.cust
+        AND least_favourite_product.month = most_favourite_product.month
+ORDER BY
+        least_favourite_product.cust,
+        least_favourite_product.month;
+
+
+________________
+
+
+Query 4
+
+
+WITH quarter1 AS (
+        SELECT
+                cust,
+                prod,
+                quant
+        FROM
+                sales
+        WHERE
+                month IN ('1', '2', '3')
+),
+quarter1_avg AS (
+        SELECT
+                cust,
+                prod,
+                round(avg(quant)) AS q1_avg
+        FROM
+                quarter1
+        GROUP BY
+                cust,
+                prod
+),
+quarter2 AS (
+        SELECT
+                cust,
+                prod,
+                quant
+        FROM
+                sales
+        WHERE
+                month IN ('4', '5', '6')
+),
+quarter2_avg AS (
+        SELECT
+                cust,
+                prod,
+                round(avg(quant)) AS q2_avg
+        FROM
+                quarter2
+        GROUP BY
+                cust,
+                prod
+),
+quarter3 AS (
+        SELECT
+                cust,
+                prod,
+                quant
+        FROM
+                sales
+        WHERE
+                month IN ('7', '8', '9')
+),
+quarter3_avg AS (
+        SELECT
+                cust,
+                prod,
+                round(avg(quant)) AS q3_avg
+        FROM
+                quarter3
+        GROUP BY
+                cust,
+                prod
+),
+quarter4 AS (
+        SELECT
+                cust,
+                prod,
+                quant
+        FROM
+                sales
+        WHERE
+                month IN ('10', '11', '12')
+),
+quarter4_avg AS (
+        SELECT
+                cust,
+                prod,
+                round(avg(quant)) AS q4_avg
+        FROM
+                quarter4
+        GROUP BY
+                cust,
+                prod
+),
+quarter_averages AS (
+        SELECT
+                quarter4_avg.cust,
+                quarter4_avg.prod,
+                quarter1_avg.q1_avg,
+                quarter2_avg.q2_avg,
+                quarter3_avg.q3_avg,
+                quarter4_avg.q4_avg
+        FROM
+                quarter4_avg
+                JOIN quarter3_avg ON quarter4_avg.cust = quarter3_avg.cust
+                        AND quarter4_avg.prod = quarter3_avg.prod
+                JOIN quarter2_avg ON quarter4_avg.cust = quarter2_avg.cust
+                        AND quarter4_avg.prod = quarter2_avg.prod
+                JOIN quarter1_avg ON quarter4_avg.cust = quarter1_avg.cust
+                        AND quarter4_avg.prod = quarter1_avg.prod
+),
+average_sum_count AS (
+        SELECT
+                cust,
+                prod,
+                round(avg(quant)) AS average,
+        sum(quant) AS total,
+        count(quant) AS count
+FROM
+        sales
+GROUP BY
+        cust,
+        prod
+)
+SELECT
+        average_sum_count.cust AS customer,
+        average_sum_count.prod AS product,
+        quarter_averages.q1_avg,
+        quarter_averages.q2_avg,
+        quarter_averages.q3_avg,
+        quarter_averages.q4_avg,
+        average_sum_count.average,
+        average_sum_count.total,
+        average_sum_count.count
+FROM
+        average_sum_count
+        JOIN quarter_averages ON average_sum_count.cust = quarter_averages.cust
+                AND average_sum_count.prod = quarter_averages.prod
+        ORDER BY
+                customer,
+                product;
+
+
+________________
+
+
+Query 5
+
+
+WITH quarter1 AS (
+        SELECT
+                prod,
+                quant,
+                date
+        FROM
+                sales
+        WHERE
+                month IN ('1', '2', '3')
+),
+quarter1_max AS (
+        SELECT
+                prod,
+                max(quant) AS q1_max
+        FROM
+                quarter1
+        GROUP BY
+                prod
+),
+quarter2 AS (
+        SELECT
+                prod,
+                quant,
+                date
+        FROM
+                sales
+        WHERE
+                month IN ('4', '5', '6')
+),
+quarter2_max AS (
+        SELECT
+                prod,
+                max(quant) AS q2_max
+        FROM
+                quarter2
+        GROUP BY
+                prod
+),
+quarter3 AS (
+        SELECT
+                prod,
+                quant,
+                date
+        FROM
+                sales
+        WHERE
+                month IN ('7', '8', '9')
+),
+
+
+quarter3_max AS (
+        SELECT
+                prod,
+                max(quant) AS q3_max
+        FROM
+                quarter3
+        GROUP BY
+                prod
+),
+quarter4 AS (
+        SELECT
+                prod,
+                quant,
+                date
+        FROM
+                sales
+        WHERE
+                month IN ('10', '11', '12')
+),
+quarter4_max AS (
+        SELECT
+                prod,
+                max(quant) AS q4_max
+        FROM
+                quarter4
+        GROUP BY
+                prod
+),
+intermediate1 AS (
+        SELECT
+                quarter1_max.prod,
+                quarter1_max.q1_max,
+                quarter1.date
+        FROM
+                quarter1_max
+                JOIN quarter1 ON quarter1_max.prod = quarter1.prod
+                        AND quarter1_max.q1_max = quarter1.quant
+),
+intermediate2 AS (
+        SELECT
+                quarter2_max.prod,
+                quarter2_max.q2_max,
+                quarter2.date
+        FROM
+                quarter2_max
+        JOIN quarter2 ON quarter2_max.prod = quarter2.prod
+                AND quarter2_max.q2_max = quarter2.quant
+),
+intermediate3 AS (
+        SELECT
+                quarter3_max.prod,
+                quarter3_max.q3_max,
+                quarter3.date
+        FROM
+                quarter3_max
+        JOIN quarter3 ON quarter3_max.prod = quarter3.prod
+                AND quarter3_max.q3_max = quarter3.quant
+),
+intermediate4 AS (
+        SELECT
+                quarter4_max.prod,
+                quarter4_max.q4_max,
+                quarter4.date
+        FROM
+                quarter4_max
+        JOIN quarter4 ON quarter4_max.prod = quarter4.prod
+                AND quarter4_max.q4_max = quarter4.quant
+)
+SELECT 
+        intermediate4.prod,
+        intermediate1.q1_max,
+        intermediate1.date,
+        intermediate2.q2_max,
+        intermediate2.date,
+        intermediate3.q3_max,
+        intermediate3.date,
+        intermediate4.q4_max,
+        intermediate4.date
+FROM
+        intermediate4
+JOIN intermediate3 ON intermediate4.prod = intermediate3.prod
+JOIN intermediate2 ON intermediate4.prod = intermediate2.prod
+JOIN intermediate1 ON intermediate4.prod = intermediate1.prod
+ORDER BY
+        prod;

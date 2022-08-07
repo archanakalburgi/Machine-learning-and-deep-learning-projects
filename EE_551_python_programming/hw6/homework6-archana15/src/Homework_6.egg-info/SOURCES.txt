@@ -1,0 +1,9 @@
+README.md
+setup.py
+src/Homework_6.egg-info/PKG-INFO
+src/Homework_6.egg-info/SOURCES.txt
+src/Homework_6.egg-info/dependency_links.txt
+src/Homework_6.egg-info/top_level.txt
+src/mypkg/__init__.py
+src/mypkg/my_answers.py
+src/mypkg/rough.py

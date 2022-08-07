@@ -1,0 +1,404 @@
+CS 561-B : Assignment 2 query report
+
+Name : Archana Kalburgi
+CWID : 10469491
+
+---------------------------------------------------------------------------------------------------------------
+
+--Query 1
+-- ignoring year
+
+WITH avg_quant_sold AS (
+	SELECT
+		cust,
+		prod,
+		month,
+		avg(quant) AS quant_avg
+	FROM
+		sales
+	GROUP BY
+		1,
+		2,
+		3
+	ORDER BY
+		1,
+		2,
+		3
+),
+prev_next_avg AS (
+	SELECT
+		a.cust,
+		a.prod,
+		a.month,
+		(
+			SELECT
+				avg(s.quant) AS prev_month_avg
+		FROM
+			sales s
+		WHERE
+			s.month = a.month - 1
+			AND s.cust = a.cust
+			AND s.prod = a.prod
+		GROUP BY
+			s.cust,
+			s.prod,
+			s.month - 1),
+		(
+			SELECT
+				avg(s.quant) AS next_month_avg
+		FROM
+			sales s
+		WHERE
+			s.month = a.month + 1
+			AND s.cust = a.cust
+			AND s.prod = a.prod
+		GROUP BY
+			s.cust,
+			s.prod,
+			s.month + 1)
+	FROM
+		avg_quant_sold a
+	ORDER BY
+		1,
+		2,
+		3
+),
+tot AS (
+	SELECT
+		s.cust,
+		s.prod,
+		s.month,
+		s.quant
+	FROM
+		sales s,
+		prev_next_avg p
+	WHERE ((s.quant >= p.prev_month_avg
+			AND s.quant <= p.next_month_avg)
+		OR (s.quant >= p.next_month_avg
+			AND s.quant <= p.prev_month_avg))
+	AND s.cust = p.cust
+	AND s.prod = p.prod
+	AND s.month = p.month
+ORDER BY
+	s.cust,
+	s.prod,
+	s.month
+),
+s1 AS (
+	SELECT
+		cust,
+		prod,
+		month,
+		count(quant) AS SALES_COUNT_BETWEEN_AVGS
+	FROM
+		tot
+	GROUP BY
+		cust,
+		prod,
+		month
+	ORDER BY
+		cust,
+		prod,
+		month
+)
+SELECT
+	aqs.cust,
+	aqs.prod,
+	aqs.month,
+	s1.SALES_COUNT_BETWEEN_AVGS
+FROM
+	avg_quant_sold aqs
+	LEFT JOIN s1 ON s1.month = aqs.month
+		AND s1.cust = aqs.cust
+		AND s1.prod = aqs.prod;
+
+---------------------------------------------------------------------------------------------------------------
+
+
+--Query 2 
+
+WITH average AS (
+	SELECT
+		cust,
+		prod,
+		month,
+		round(avg(quant), 4) AS avg_quant
+	FROM
+		sales
+	GROUP BY
+		cust,
+		prod,
+		month
+),
+prev_next_avg AS (
+	SELECT
+		a.cust,
+		a.prod,
+		a.month,
+		a.avg_quant AS during_avg,
+		(
+			SELECT
+				round(avg(s.quant), 4) AS before_avg
+		FROM
+			sales s
+		WHERE
+			s.month = a.month - 1
+			AND s.cust = a.cust
+			AND s.prod = a.prod
+		GROUP BY
+			s.cust,
+			s.prod,
+			s.month - 1),
+		(
+			SELECT
+				round(avg(s.quant), 4) AS after_avg
+		FROM
+			sales s
+		WHERE
+			s.month = a.month + 1
+			AND s.cust = a.cust
+			AND s.prod = a.prod
+		GROUP BY
+			s.cust,
+			s.prod,
+			s.month + 1)
+	FROM
+		average a
+	ORDER BY
+		1,
+		2,
+		3
+)
+SELECT
+	png.cust,
+	png.prod,
+	png.month,
+	png.before_avg,
+	png.during_avg,
+	png.after_avg
+FROM
+	prev_next_avg AS png;
+
+
+---------------------------------------------------------------------------------------------------------------
+
+
+--Query 3
+
+WITH average_product AS (
+	SELECT
+		cust,
+		prod,
+		state,
+		round(avg(quant), 4) AS prod_avg
+	FROM
+		sales
+	GROUP BY
+		cust,
+		prod,
+		state
+),
+other_customer_average AS (
+	SELECT
+		ap.cust,
+		ap.prod,
+		ap.state,
+		ap.prod_avg,
+		round(avg(s.quant), 4) AS other_cust_avg
+	FROM
+		average_product AS ap,
+		sales AS s
+	WHERE
+		ap.cust != s.cust
+		AND ap.prod = s.prod
+		AND ap.state = s.state
+	GROUP BY
+		ap.cust,
+		ap.prod,
+		ap.state,
+		ap.prod_avg
+),
+other_product_average AS (
+	SELECT
+		ap.cust,
+		ap.prod,
+		ap.state,
+		ap.prod_avg,
+		round(avg(s.quant), 4) AS other_prod_avg
+	FROM
+		average_product AS ap,
+		sales AS s
+	WHERE
+		ap.cust = s.cust
+		AND ap.state = s.state
+		AND ap.prod != s.prod
+	GROUP BY
+		ap.cust,
+		ap.prod,
+		ap.state,
+		ap.prod_avg
+),
+other_state_average AS (
+	SELECT
+		ap.cust,
+		ap.prod,
+		ap.state,
+		ap.prod_avg,
+		round(avg(s.quant), 4) AS other_state_avg
+	FROM
+		average_product AS ap,
+		sales AS s
+	WHERE
+		ap.cust = s.cust
+		AND ap.prod = s.prod
+		AND ap.state != s.state
+	GROUP BY
+		ap.cust,
+		ap.prod,
+		ap.state,
+		ap.prod_avg
+)
+SELECT
+	average_product.cust AS customer,
+	average_product.prod AS product,
+	average_product.state,
+	average_product.prod_avg,
+	other_customer_average.other_cust_avg,
+	other_product_average.other_prod_avg,
+	other_state_average.other_state_avg
+FROM (average_product
+	FULL OUTER JOIN other_customer_average ON average_product.cust = other_customer_average.cust
+	AND average_product.prod = other_customer_average.prod
+	AND average_product.state = other_customer_average.state)
+	FULL OUTER JOIN other_product_average ON (average_product.cust = other_product_average.cust
+		AND average_product.prod = other_product_average.prod
+		AND average_product.state = other_product_average.state)
+	FULL OUTER JOIN other_state_average ON (average_product.cust = other_state_average.cust
+		AND average_product.prod = other_state_average.prod
+		AND average_product.state = other_state_average.state)
+ORDER BY
+	average_product.cust,
+	average_product.prod,
+	average_product.state;
+
+
+---------------------------------------------------------------------------------------------------------------
+
+
+--Query 4
+
+WITH filter_state AS (
+	SELECT
+		cust,
+		quant,
+		prod,
+		date
+	FROM
+		sales
+	WHERE
+		state = 'NJ'
+)
+SELECT
+	*
+FROM
+	filter_state AS fs
+WHERE (cust, quant) IN (
+	SELECT
+		cust,
+		quant
+	FROM
+		filter_state
+	WHERE
+		cust = fs.cust
+	GROUP BY
+		cust,
+		quant
+	ORDER BY
+		cust,
+		quant DESC
+	LIMIT 3)
+ORDER BY
+	cust,
+	quant DESC;
+
+
+---------------------------------------------------------------------------------------------------------------
+
+
+--Query 5
+
+WITH helper AS (
+	SELECT
+		cust,
+		prod,
+		month,
+		sum(quant)
+	FROM
+		sales
+	GROUP BY
+		1,
+		2,
+		3
+),
+total_quant AS (
+	SELECT
+		cust,
+		prod,
+		sum(sum)
+	FROM
+		helper
+	GROUP BY
+		1,
+		2
+),
+accumulator AS (
+	SELECT
+		a.cust,
+		a.prod,
+		a.month,
+		a.sum,
+		sum(b.sum) AS accumulate
+	FROM
+		helper AS a
+		JOIN helper AS b ON b.month <= a.month
+			AND a.cust = b.cust
+			AND a.prod = b.prod
+	GROUP BY
+		1,
+		2,
+		3,
+		4
+),
+one_third_quant AS (
+	SELECT
+		a.cust,
+		a.prod,
+		a.month,
+		a.accumulate
+	FROM
+		accumulator AS a,
+		total_quant AS b
+	WHERE
+		a.cust = b.cust
+		AND a.prod = b.prod
+		AND a.accumulate >= (1.0 / 3.0 * b.sum)
+),
+final_table AS (
+	SELECT
+		cust AS customer,
+		prod AS product,
+		min(month) AS "1/3 purchased by month"
+	FROM
+		one_third_quant
+	GROUP BY
+		cust,
+		prod
+	ORDER BY
+		cust,
+		prod
+)
+SELECT
+	*
+FROM
+	final_table;
+

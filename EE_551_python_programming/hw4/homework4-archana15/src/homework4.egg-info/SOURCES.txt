@@ -1,0 +1,7 @@
+setup.py
+src/homework4.egg-info/PKG-INFO
+src/homework4.egg-info/SOURCES.txt
+src/homework4.egg-info/dependency_links.txt
+src/homework4.egg-info/top_level.txt
+src/mypkg/__init__.py
+src/mypkg/my_answers.py
